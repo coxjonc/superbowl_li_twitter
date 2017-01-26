@@ -18,6 +18,16 @@ ACCESS_TOKEN = os.environ.get('TWITTER_ACCESS_TOKEN')
 ACCESS_SECRET = os.environ.get('TWITTER_ACCESS_SECRET')
 DB_URL = os.environ.get('DATABASE_URL')
 
+# Twitter API treats commas as logical OR, spaces as logical AND
+TERMS = ['#falcons',
+         '#patriots',
+         '@AtlantaFalcons',
+         '@Patriots',
+         '#RiseUp',
+         '#GoPats',
+         'falcons superbowl',
+         'patriots superbowl']
+
 class GameStreamListener(tweepy.StreamListener):
     """
     A stream listener that writes tweets on given subjects to the MySQL DB
@@ -69,4 +79,4 @@ if __name__ == '__main__':
 
     # Create a stream object and begin listening for terms
     stream = tweepy.Stream(auth=api.auth, listener=gameStreamListener)
-    stream.filter(track=['falcons'])
+    stream.filter(track=[TERMS])
