@@ -25,8 +25,10 @@ class GameStreamListener(tweepy.StreamListener):
     """
     def __init__(self):
         url = make_url(DB_URL)
+        # Need to pass the charset argument so that the connection can
+        # handle characters outside the range of normal UTF-8 (eg emojis) - JC
         self.connection = MySQLdb.connect(url.host, url.username,
-                url.password, url.database)
+                url.password, url.database, charset='utf8mb4')
         self.c = self.connection.cursor()
 
     def on_data(self, data):
@@ -40,7 +42,8 @@ class GameStreamListener(tweepy.StreamListener):
         self.connection.commit()
 
     def on_error(self, status_code):
-        # Twitter returns a 420 error if the client hits a rate limit
+        # Twitter returns a 420 error if the client hits a rate limit, so we
+        # need to exit gracefully when this happens
         if status_code == 420:
             # Returning False disconnects the stream
             return False
@@ -56,6 +59,7 @@ class StreamAuth(tweepy.OAuthHandler):
     def __init__(self, key, secret):
         super(StreamAuth, self).__init__(key, secret)
         self.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
+
 
 if __name__ == '__main__':
     # Create an authenticated API object
