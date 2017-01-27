@@ -1,36 +1,214 @@
 <!DOCTYPE html>
 <html>
-  <head>
-      <meta charset="utf-8">
-    <meta name="viewport" content="width=320" />
-    <title>Gauge</title>
-    <script type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
-    <script type="text/javascript" src="/script.js"></script>
-    <style>
-    body {
-      font-family:  Helvetica, Arial, sans-serif;
-      margin: 32px;
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width" />
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/css/foundation.min.css">
+<style>
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.seatgeeklogo {
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.small {
+  font-size: .8em;
+}
+body {
+  font-family: "Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+}
+
+</style>
+
+</head>
+<body>
+  <div class="row">
+    <p id="last-updated" class="small"></p>
+    <ul class="small-block-grid-3">
+      <li><div id="lowest-ticker-box" class="panel"></div></li>
+      <li><div id="average-ticker-box" class="panel"></div></li>
+      <li><div id="highest-ticker-box" class="panel"></div></li>
+    </ul>
+  </div>
+  
+  <div id="charts"></div>
+  <p class="small">powered by <a href="https://seatgeek.com/" target="_blank"><img class="seatgeeklogo" src="SeatGeek_Blue.svg" width="100"></a></p>
+<script src="//d3js.org/d3.v4.min.js"></script>
+<script>
+
+var url = window.location.toString(),
+    query_string = url.replace(/\//g,'').split("?");
+
+var moneyFormat = d3.format("$,"),
+    commaFormat = d3.format(",");
+
+var colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+d3.csv("data/seat_price_data.csv", type, function(error, data) {
+  if (error) throw error;
+
+  var lines = data.columns.slice(2).map(function(id, count) {
+    return {
+      id: id.replace("_", " "),
+      values: data.map(function(d) {
+        return {time: d.time, quantity: d[id]};
+      }),
+      lineColor: colors(count)
+    };
+  });
+
+  //update the current price tickers at the top
+  for (var i=0; i<lines.length; i++){
+    var label = lines[i].id,
+        firstWord = label.split(" ")[0],
+        formatter;
+
+    if(firstWord !== "listing"){
+      formatter = moneyFormat;
+    } else {
+      formatter = commaFormat;
+      firstWord = "listings";
+      label = "listings";
+    }
+    var $topBox = d3.select("#"+firstWord +"-ticker-box");
+    $topBox.html("Current "+ label + ": "+ formatter(lines[i].values[lines[i].values.length-1].quantity));
+    $topBox.style("border-bottom", "3px solid "+lines[i].lineColor);
+  }
+  drawChart([lines[0], lines[1]]);
+  drawChart([lines[2]]);
+
+  function drawChart(lines){
+    var svg, g, margin = {}, width, height;
+    //get dimensions based on window size
+    updateDimensions(window.innerWidth);
+
+    svg = d3.select('#charts').append('svg')
+      .attr('width', width + margin.right + margin.left)
+      .attr('height', height + margin.top + margin.bottom);
+
+    g = svg.append("g");
+    g.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    var formatMillisecond = d3.timeFormat(".%L"),
+        formatSecond = d3.timeFormat(":%S"),
+        formatMinute = d3.timeFormat("%-I:%M %p"),
+        formatHour = d3.timeFormat("%-I %p"),
+        formatDay = d3.timeFormat("%a %d"),
+        formatWeek = d3.timeFormat("%b %d"),
+        formatMonth = d3.timeFormat("%B"),
+        formatYear = d3.timeFormat("%Y");
+
+    function multiFormat(date) { //to display the new date at midnight, new month on the 1st, etc. Returns the first one that is true
+      return (d3.timeSecond(date) < date ? formatMillisecond
+          : d3.timeMinute(date) < date ? formatSecond
+          : d3.timeHour(date) < date ? formatMinute
+          : d3.timeDay(date) < date ? formatHour
+          : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+          : d3.timeYear(date) < date ? formatMonth
+          : formatYear)(date);
     }
 
-    #power-gauge g.arc {
-      fill: steelblue;
-    }
+    // function yFormat(val){
+    //   return yFormat;
+    // }
+    var x = d3.scaleTime().range([0, width]),
+        y = d3.scaleLinear().range([height, 0]),
+        z = d3.scaleOrdinal(d3.schemeCategory10);
 
-    #power-gauge g.pointer {
-      fill: #e85116;
-      stroke: #b64011;
-    }
     
-    #power-gauge g.label text {
-      text-anchor: middle;
-      font-size: 14px;
-      font-weight: bold;
-      fill: #666;
-    }
-    </style>
-  </head>
+    var line = d3.line()
+        //.curve(d3.curveBasis)
+        .x(function(d) { return x(d.time); })
+        .y(function(d) { return y(d.quantity); });
 
-  <body>
-    <div id="power-gauge"></div>
-  </body>
+        x.domain(d3.extent(data, function(d) { return d.time; }));
+
+        y.domain([
+          d3.min(lines, function(c) { return d3.min(c.values, function(d) { return d.quantity; }); }),
+          d3.max(lines, function(c) { return d3.max(c.values, function(d) { return d.quantity; }); })
+        ]);
+
+        z.domain(lines.map(function(c) { return c.id; }));
+
+    var fullTimestampFormat = d3.timeFormat("%-I:%M %p %A, %b. %-d, %Y");
+    d3.select("#last-updated").html("Last updated: "+fullTimestampFormat(x.domain()[1])); //this doesn't really need to run for each chart but whatever
+
+    var xAxis = d3
+        .axisBottom(x)
+        .tickFormat(multiFormat);
+
+        if(width <= 500){
+          xAxis.ticks(5);
+        }
+
+
+    var yAxis = d3
+      .axisLeft(y)
+      .tickFormat(moneyFormat);
+  
+      g.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      g.append("g")
+          .attr("class", "axis axis--y")
+          .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", "0.71em")
+          .attr("fill", "#000")
+          //.text("quantity in dollars");
+
+      var category = g.selectAll(".category")
+        .data(lines)
+        .enter().append("g")
+          .attr("class", "category");
+
+      category.append("path")
+          .attr("class", "line")
+          .attr("d", function(d) { return line(d.values); })
+          .style("stroke", function(d) { return d.lineColor; });
+
+      category.append("text")
+          .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+          .attr("transform", function(d) { return "translate(" + x(d.value.time) + "," + y(d.value.quantity) + ")"; })
+          .attr("x", 3)
+          .attr("dy", "0.35em")
+          .style("font", "10px sans-serif")
+          .text(function(d) { return d.id; });
+
+
+      function updateDimensions(winWidth) {
+        margin.top = 20;
+        margin.right = 80;
+        margin.left = 50;
+        margin.bottom = 30;
+        width = winWidth - margin.left - margin.right;
+        height = 350 - margin.top - margin.bottom;
+      }
+
+    }//draw chart
+    
+});
+
+function type(d, _, columns) {
+  //d.time = parseTime(d.time);
+  var tmpDate = Date.parse(d.time);
+  var myDate = new Date(tmpDate - (5*60*60000)); //5 hours = 5 * 60 minutes * 60000 milliseconds
+  d.time = myDate;
+
+  for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];
+  return d;
+}
+
+</script>
+</body>
 </html>
