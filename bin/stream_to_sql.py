@@ -79,4 +79,4 @@ if __name__ == '__main__':
 
     # Create a stream object and begin listening for terms
     stream = tweepy.Stream(auth=api.auth, listener=gameStreamListener)
-    stream.filter(track=[TERMS])
+    stream.filter(track=TERMS)

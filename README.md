@@ -16,6 +16,6 @@ Parsing Twitter requires an API key and access token. Create a Twitter applicati
 
 Load tweets into database
 ---
-Once you have your environment configured and have installed all the necessary packages, run the script to import tweets from the livestream into your MySQL DB.
+Once you have your environment configured and have installed all the necessary packages, run the script to import tweets from the livestream into your MySQL DB. Run with `nohup` if you want Unix to ignore the hangup (HUP) signal
 
-`python bin/stream_to_sql.py`
+`nohup python bin/stream_to_sql.py&`
