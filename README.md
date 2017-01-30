@@ -18,4 +18,11 @@ Load tweets into database
 ---
 Once you have your environment configured and have installed all the necessary packages, run the script to import tweets from the livestream into your MySQL DB. Run with `nohup` if you want Unix to ignore the hangup (HUP) signal
 
-`nohup python bin/stream_to_sql.py&`
+The python script is wrapped in a shell script that restarts after being unexpectedly terminated.
+
+`nohup ./bin/forever.sh`
+
+Development
+---
+The code for pulling the tweets from the Twitter Streaming API lives in `bin`. Frontend code lives in `web`.
+
