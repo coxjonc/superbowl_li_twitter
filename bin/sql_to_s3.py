@@ -37,9 +37,6 @@ class TweetHandler(object):
         self.df = None
 
     def _start_s3_session(self):
-        """
-        Use boto3 to start an s3 session
-        """
         session = boto3.Session(
             aws_access_key_id=AWS_ACCESS_KEY,
             aws_secret_access_key=AWS_SECRET_KEY
