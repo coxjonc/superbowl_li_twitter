@@ -2,7 +2,6 @@
 
 # Standard lib imports
 import json
-import pdb
 import os
 
 # Third-party imports
@@ -27,6 +26,15 @@ TERMS = ['#falcons',
          '#GoPats',
          'falcons superbowl',
          'patriots superbowl']
+
+# Logging
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s $(name)-12s $(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
 
 class GameStreamListener(tweepy.StreamListener):
     """
@@ -55,11 +63,9 @@ class GameStreamListener(tweepy.StreamListener):
         # Twitter returns a 420 error if the client hits a rate limit, so we
         # need to exit gracefully when this happens
         if status_code == 420:
+            logger.debug('Rate limit exceeded')
             # Returning False disconnects the stream
             return False
-
-    def on_status(self, status):
-        print(status.text)
 
 class StreamAuth(tweepy.OAuthHandler):
     """
