@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 # Standard lib imports
+import logging
 import os
 import time
 import re
@@ -12,6 +13,14 @@ import pandas as pd
 # Constants
 DATABASE_URL = os.environ.get('DATABASE_URL')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Logging
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s $(name)-12s $(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
 
 class TweetHandler(object):
     """
@@ -43,13 +52,16 @@ class TweetHandler(object):
 
     def get_table(self, table_name):
         with self.engine.connect() as conn, conn.begin():
+            logger.debug('Connected to database, getting data')
             self.df = pd.read_sql_table(table_name, conn)
+
 
     def format_csv(self):
         df = self.df
 
         # Add Boolean columns for whether a given row contains a reference
         # to the Patriots or the Falcons
+        logger.debug('Adding boolean columns for falcons and patriots')
         df['has_falcons'] = df.apply(self._check_falcons, axis=1)
         df['has_patriots'] = df.apply(self._check_patriots, axis=1)
 
