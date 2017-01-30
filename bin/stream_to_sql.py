@@ -1,13 +1,15 @@
 #!/usr/bin/python
 
 # Standard lib imports
+import re
+import logging
 import json
 import os
+import time
 
 # Third-party imports
 import MySQLdb
 from sqlalchemy.engine.url import make_url
-import time
 import tweepy
 
 # Constants
@@ -42,6 +44,7 @@ class GameStreamListener(tweepy.StreamListener):
     using a persistent connection
     """
     def __init__(self):
+        logging.debug('Attempting to connect to MySQL database...')
         url = make_url(DB_URL)
         # Need to pass the charset argument so that the connection can
         # handle characters outside the range of normal UTF-8 (eg emojis) - JC
@@ -49,13 +52,30 @@ class GameStreamListener(tweepy.StreamListener):
                 url.password, url.database, charset='utf8mb4')
         self.c = self.connection.cursor()
 
+    def _has_falcons(self, tweet):
+        regex = re.compile(r'falcons|@atlantafalcons|#riseup', flags=re.IGNORECASE)
+        match = regex.search(tweet)
+        if match:
+            return 1
+        return 0
+
+    def _has_patriots(self, tweet):
+        regex = re.compile(r'patriots|@patriots|#gopats', flags=re.IGNORECASE)
+        match = regex.search(tweet)
+        if match:
+            return 1
+        return 0
+
     def on_data(self, data):
         fdata = json.loads(data)
         tweet = fdata['text']
         username = fdata['user']['screen_name']
+        has_falcons = self._has_falcons(tweet)
+        has_patriots = self._has_patriots(tweet)
 
-        self.c.execute('INSERT INTO tweets (time, username, tweet) VALUES (%s,%s,%s)',
-                (time.time(), username, tweet))
+        self.c.execute('''INSERT INTO tweets (time, username, tweet,
+                       has_falcons, has_patriots) VALUES (%s,%s,%s,%s,%s)''',
+                       (time.time(), username, tweet, has_falcons, has_patriots))
 
         self.connection.commit()
 
