@@ -1,4 +1,4 @@
-Pull time-stamped tweets about the Falcons and Patriots from the Twitter API
+Pull time-stamped tweets from the Twitter streaming API and load them into a MySQL database
 ===
 
 Installation and Environment config
