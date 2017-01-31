@@ -211,5 +211,3 @@ function type(d, _, columns) {
   return d;
 }
 
-</script>
-

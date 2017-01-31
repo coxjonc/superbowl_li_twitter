@@ -16,7 +16,7 @@ TMP = os.path.join('/tmp', 'tweets_per_minute_tmp.csv')
 AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
 BUCKET_NAME = 'ajcnewsapps'
-S3_PATH = '2017/superbowl_li_twitter/tweets_per_minute.csv'
+S3_PATH = '2017/superbowl_li_twitter/data/tweets_per_minute.csv'
 
 # Logging
 logger = logging.getLogger()
