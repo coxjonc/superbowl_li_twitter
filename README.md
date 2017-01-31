@@ -30,7 +30,7 @@ The script saves data about whether the tweet contains key terms associated with
 
 Write tweet data to S3
 ---
-If you want to upload tweet data live to S3, copy `./bin/write_tweets_s3.sh` into your scripts directory, run `chmod +x write_tweets_s3` to give it execute permission, and set up a cron job to run the script automatically. To run a cron job that would update the CSV on S3 every 5 minutes, for instance, you would type `crontab -e` and add the following add:
+If you want to upload tweet data live to S3, copy `./bin/write_tweets_s3.sh` into your scripts directory, run `chmod +x write_tweets_s3` to give it execute permission, and set up a cron job to run the script automatically. To run a cron job that would update the CSV on S3 every 5 minutes, for instance, you would type `crontab -e` and add the following:
 
 `*/5 * * * * /path/to/your/script`
 
