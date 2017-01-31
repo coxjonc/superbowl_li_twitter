@@ -71,8 +71,6 @@ class TweetHandler(object):
 
             # Merge Falcons and Patriots data
             ticker = falcons_r.merge(patriots_r, how='outer', on='ftime')
-            import pdb
-            pdb.set_trace()
             ticker.to_csv(TMP, index=False)
 
             logger.debug('Generated local CSV')
