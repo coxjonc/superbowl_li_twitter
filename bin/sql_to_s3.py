@@ -17,6 +17,7 @@ AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
 BUCKET_NAME = 'ajcnewsapps'
 S3_PATH = '2017/superbowl_li_twitter/data/tweets_per_minute.csv'
+CUTOFF = 1485820800
 
 # Logging
 logger = logging.getLogger()
@@ -54,23 +55,31 @@ class TweetHandler(object):
         with self.engine.connect() as conn, conn.begin():
             logging.debug('Connection successful! Loading data into dataframe...')
             df = pd.read_sql_table(table_name, conn)
+            mask = df['time'] >= CUTOFF
+            df = df[mask]
 
             # Get formatted time from Epoch time down to the minute, not second
             # I should be converting to a datetime object and binning
             # but this is a quick and dirty solution
-            df['ftime'] = df.apply(lambda x: time.strftime('%m %d %H:%M',
+            df['ftime'] = df.apply(lambda x: time.strftime('%Y %m %d %H:%M',
                                     time.localtime(float(x['time']))), axis=1)
             falcons = df[df['has_falcons'] == '1']
             patriots = df[df['has_patriots'] == '1']
 
-            falcons_g = falcons.groupby(['ftime']).size().reset_index()
-            patriots_g = patriots.groupby(['ftime']).size().reset_index()
+            # Group by timestamp
+            falcons = falcons.groupby(['ftime']).size().reset_index()
+            patriots = patriots.groupby(['ftime']).size().reset_index()
 
-            falcons_r = falcons_g.rename(columns={0: 'falcons'})
-            patriots_r = patriots_g.rename(columns={0: 'patriots'})
+            falcons = falcons.rename(columns={0: 'falcons'})
+            patriots = patriots.rename(columns={0: 'patriots'})
+
+            # Convert the number of tweets from float to int
+            falcons['falcons'] = falcons.apply(lambda x: int(x['falcons']), axis=1)
+            patriots['patriots'] = patriots.apply(lambda x: int(x['patriots']), axis=1)
 
             # Merge Falcons and Patriots data
-            ticker = falcons_r.merge(patriots_r, how='outer', on='ftime')
+            ticker = falcons.merge(patriots, how='outer', on='ftime')
+            ticker = ticker[:-1] # For some reason the last row is fucked up
             ticker.to_csv(TMP, index=False)
 
             logger.debug('Generated local CSV')
@@ -83,7 +92,9 @@ class TweetHandler(object):
         logger.debug('Writing csv to S3')
         bucket = self.s3.Bucket(BUCKET_NAME)
         bucket.upload_file(local_path, remote_path)
-        logger.debug('File successfully uploaded to S3!')
+        logger.debug('File successfully uploaded to S3! bucket {}. Path: {}'.format(
+            BUCKET_NAME, remote_path
+        ))
 
 if __name__ == '__main__':
     tweetHandler = TweetHandler(DATABASE_URL)
