@@ -32,9 +32,9 @@ Write tweet data to S3
 ---
 If you want to upload tweet data live to S3, copy `./bin/write_tweets_s3.sh` into your scripts directory, run `chmod +x write_tweets_s3` to give it execute permission, and set up a cron job to run the script automatically. To run a cron job that would update the CSV on S3 every 5 minutes, for instance, you would type `crontab -e` and add the following:
 
-`*/5 * * * * /path/to/your/script`
+`*/5 * * * * ./path/to/your/script.sh`
 
-That's all there is to it! Usually if there are errors cron will output a log to /var/mail/your-username, so check there to make sure the script is working properly.
+Usually if there are errors cron will output a log to `/var/mail/your-username`, so check there to make sure the script is working properly.
 
 Development
 ---
