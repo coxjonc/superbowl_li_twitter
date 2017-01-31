@@ -16,6 +16,7 @@ TMP = os.path.join('/tmp', 'tweets_per_minute_tmp.csv')
 AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
 BUCKET_NAME = 'ajcnewsapps'
+S3_PATH = '2017/superbowl_li_twitter/tweets_per_minute.csv'
 
 # Logging
 logger = logging.getLogger()
@@ -64,17 +65,30 @@ class TweetHandler(object):
 
             falcons_g = falcons.groupby(['ftime']).size().reset_index()
             patriots_g = patriots.groupby(['ftime']).size().reset_index()
-            ticker = falcons_g.merge(patriots_g, how='outer', on='ftime')
-            ticker_f = ticker.rename({'0_x': 'falcons', '0_y': 'patriots'})
-            ticker_f.reset_index().to_csv(TMP, index=False)
+
+            falcons_r = falcons_g.rename(columns={0: 'falcons'})
+            patriots_r = patriots_g.rename(columns={0: 'patriots'})
+
+            # Merge Falcons and Patriots data
+            ticker = falcons_r.merge(patriots_r, how='outer', on='ftime')
+            import pdb
+            pdb.set_trace()
+            ticker.to_csv(TMP, index=False)
+
+            logger.debug('Generated local CSV')
 
 
-    def write_to_s3(self, local_path):
+    def write_to_s3(self, local_path, remote_path):
+        """
+        Copy a file from the local directory to S3. 
+        """
+        logger.debug('Writing csv to S3')
         bucket = self.s3.Bucket(BUCKET_NAME)
-        bucket.upload_file(local_path, '2017/superbowl_li_twitter/tweets_per_minute.csv')
+        bucket.upload_file(local_path, remote_path)
+        logger.debug('File successfully uploaded to S3!')
 
 if __name__ == '__main__':
     tweetHandler = TweetHandler(DATABASE_URL)
     tweetHandler.get_tweets('tweets')
-    tweetHandler.write_to_s3(TMP)
+    tweetHandler.write_to_s3(TMP, S3_PATH)
 
