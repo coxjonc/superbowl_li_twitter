@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 # Standard lib imports
+import pdb
 import time
 from datetime import datetime
 import logging
@@ -89,7 +90,7 @@ class TweetHandler(object):
 
             # Merge Falcons and Patriots data
             ticker = falcons.merge(patriots, how='outer', on='ftime')
-            ticker = ticker[:-5] # For some reason the last couple rows are screwed up I'm looking into it - JC
+            ticker = ticker.dropna() # For some reason there are a couple NaNs in there
             ticker.to_csv(TMP, index=False)
 
             logger.debug('Generated local CSV')
