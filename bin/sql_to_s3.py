@@ -2,8 +2,10 @@
 
 # Standard lib imports
 import time
+from datetime import datetime
 import logging
 import os
+from pytz import timezone
 
 # Third-party imports
 import boto3
@@ -17,7 +19,8 @@ AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.environ.get('AWS_SECRET_KEY')
 BUCKET_NAME = 'ajcnewsapps'
 S3_PATH = '2017/superbowl_li_twitter/data/tweets_per_minute.csv'
-CUTOFF = 1485820800
+# 6 PM on Jan 31 - data before this was spotty because of server issues
+CUTOFF = 1485820800 
 
 # Logging
 logger = logging.getLogger()
@@ -46,6 +49,14 @@ class TweetHandler(object):
 
         return session.resource('s3')
 
+    def _format_time(self, row):
+        est = timezone('US/Eastern')
+        gmt = timezone('GMT')
+        tweet_time = datetime.fromtimestamp(int(row['time']))
+        tweet_gmt = gmt.localize(tweet_time)
+        localized = tweet_gmt.astimezone(est)
+
+        return localized.strftime('%Y %m %d %H:%M')
 
     def get_tweets(self, table_name):
         """
@@ -61,8 +72,7 @@ class TweetHandler(object):
             # Get formatted time from Epoch time down to the minute, not second
             # I should be converting to a datetime object and binning
             # but this is a quick and dirty solution
-            df['ftime'] = df.apply(lambda x: time.strftime('%Y %m %d %H:%M',
-                                    time.localtime(float(x['time']))), axis=1)
+            df['ftime'] = df.apply(self._format_time, axis=1)
             falcons = df[df['has_falcons'] == '1']
             patriots = df[df['has_patriots'] == '1']
 
@@ -79,7 +89,7 @@ class TweetHandler(object):
 
             # Merge Falcons and Patriots data
             ticker = falcons.merge(patriots, how='outer', on='ftime')
-            ticker = ticker[:-1] # For some reason the last row is fucked up
+            ticker = ticker[:-5] # For some reason the last couple rows are screwed up I'm looking into it - JC
             ticker.to_csv(TMP, index=False)
 
             logger.debug('Generated local CSV')
