@@ -12,11 +12,16 @@ body {
   font-size: .8em;
 }
 
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
 .falcons-i {
   background-color: rgb(31, 119, 180);
 }
 
 .patriots-i {
-  background-color: rgb(31, 119, 180);
+  background-color: rgb(255, 127, 14);
 }
 

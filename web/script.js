@@ -49,10 +49,10 @@ d3.csv("data/tweets_per_minute.csv", type, function(error, data) {
       .y(function(d) { return y(d.quantity); })
 
     x.domain(d3.extent(data, function(d) { return d.ftime; }));
-    y.domain([
-      d3.min(lines, function(c) { return d3.min(c.values, function(d) { return d.quantity; }); }),
-      d3.max(lines, function(c) { return d3.max(c.values, function(d) { return d.quantity; }); })
-    ]);
+    y.domain([0, 250])
+    //   d3.min(lines, function(c) { return d3.min(c.values, function(d) { return d.quantity; }); }),
+    //   d3.max(lines, function(c) { return d3.max(c.values, function(d) { return d.quantity; }); })
+    // ]);
     z.domain(lines.map(function(l) { return l.id }))
 
     var fullTimestampFormat = d3.timeFormat('%m %d %H:%M');
@@ -81,7 +81,24 @@ d3.csv("data/tweets_per_minute.csv", type, function(error, data) {
     var team = g.selectAll(".team")
         .data(lines)
       .enter().append("g")
-        .attr("class", "team");
+        .attr("class", "team")
+    
+      /*
+    team.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em");
+        //.attr("fill", "#000")
+        //.text("quantity in dollars");
+
+    team.append("text")
+        .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+        .attr("transform", function(d) { return "translate(" + x(d.value.time) + "," + y(d.value.quantity) + ")"; })
+        .attr("x", 3)
+        .attr("dy", "0.35em")
+        .style("font", "10px sans-serif")
+        .text(function(d) { return d.id; });
+    */
 
     team.append("path")
         .attr("class", "line")

@@ -3,16 +3,26 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" type="text/css" href="/style.css"/>
+    <link rel="stylesheet" type="text/css" href="./style.css"/>
   </head>
 
   <body>
-    <h1>Tweets per minute for Falcons and Patriots</h1>
+    <h1>Tweets per minute about the Falcons and Patriots</h1>
     <p id="last-updated" class="small"></p>
+    <table class="legend">
+      <tr class="legend-item">
+        <td><div class="icon falcons-i"></div></td>
+        <td>Falcons</td>
+      </tr>
+      <tr class="legend-item">
+        <td><div class="icon patriots-i"></div></td>
+        <td>Patriots</td>
+      </tr>
+    </table>
     
     <div id="charts"></div>
   <script src="//d3js.org/d3.v4.min.js"></script>
-  <script type="text/javascript" src="/script.js"></script>
+  <script type="text/javascript" src="./script.js"></script>
   </body>
 
 </html>
