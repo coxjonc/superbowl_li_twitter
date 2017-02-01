@@ -1,4 +1,4 @@
-Pull time-stamped tweets from the Twitter streaming API and load them into a MySQL database
+Pull time-stamped tweets from the Twitter streaming API and load them into a MySQL database, then render stats about them as a fever graph
 ===
 
 Installation and Environment config
