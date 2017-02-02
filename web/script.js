@@ -4,15 +4,15 @@ var margin = {'top': 20, 'right': 80, 'left': 50, 'bottom': 30},
     width = null;
 
 var url = window.location.toString(),
-    query_string = url.replace(/\//g,'').split("?");
+    query_string = url.replace(/\//g,'').split('?');
 
-var commaFormat = d3.format(",");
+var commaFormat = d3.format(',');
 
 var colors = d3.scaleOrdinal(d3.schemeCategory10);
 var bisectDate = d3.bisector(function(d) { return d.time; }).left
 
 // Fire when the chart initializes and again whenever the window is resized
-d3.csv("data/tweets_per_minute.csv", type, function(error, data) {
+d3.csv('data/tweets_per_minute.csv', type, function(error, data) {
   if (error) throw error;
 
   var lines = data.columns.slice(1).map(function(teamName, i) {
@@ -36,7 +36,7 @@ d3.csv("data/tweets_per_minute.csv", type, function(error, data) {
       .attr('width', width + margin.right + margin.left)
       .attr('height', height + margin.top + margin.bottom);
 
-    var g = svg.append("g")
+    var g = svg.append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
     var x = d3.scaleTime().range([0, width]),
@@ -55,8 +55,8 @@ d3.csv("data/tweets_per_minute.csv", type, function(error, data) {
     // ]);
     z.domain(lines.map(function(l) { return l.id }))
 
-    var fullTimestampFormat = d3.timeFormat('%m %d %H:%M');
-    d3.select("#last-updated").html("Last updated: "+ fullTimestampFormat(x.domain()[1])); //this doesn't really need to run for each chart but whatever
+    var fullTimestampFormat = d3.timeFormat("%-I:%M %p %A, %b. %-d, %Y");
+    d3.select("#last-updated").html("Last updated: "+fullTimestampFormat(x.domain()[1]));
 
     var xAxis = d3
       .axisBottom(x)
@@ -69,36 +69,27 @@ d3.csv("data/tweets_per_minute.csv", type, function(error, data) {
     var yAxis = d3
       .axisLeft(y)
   
-    g.append("g")
-        .attr("class", "axis axis--x")
-        .attr("transform", "translate(0," + height + ")")
+    g.append('g')
+        .attr('class', 'axis axis--x')
+        .attr('transform', 'translate(0,' + height + ')')
         .call(xAxis);
 
-    g.append("g")
-        .attr("class", "axis axis--y")
+    g.append('g')
+        .attr('class', 'axis axis--y')
         .call(yAxis)
 
-    var team = g.selectAll(".team")
+    var team = g.selectAll('.team')
         .data(lines)
-      .enter().append("g")
-        .attr("class", "team")
+      .enter().append('g')
+        .attr('class', 'team')
     
-      /*
-    team.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", "0.71em");
-        //.attr("fill", "#000")
-        //.text("quantity in dollars");
-
-    team.append("text")
-        .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
-        .attr("transform", function(d) { return "translate(" + x(d.value.time) + "," + y(d.value.quantity) + ")"; })
-        .attr("x", 3)
-        .attr("dy", "0.35em")
-        .style("font", "10px sans-serif")
-        .text(function(d) { return d.id; });
-    */
+    team.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('y', 0 - margin.left)
+        .attr('x', 0 - (height / 2))
+        .attr('dy', '1em')
+        .attr('fill', '#000')
+        .text('Number of tweets');
 
     team.append("path")
         .attr("class", "line")
