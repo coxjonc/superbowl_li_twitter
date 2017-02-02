@@ -49,10 +49,10 @@ d3.csv('data/tweets_per_minute.csv', type, function(error, data) {
       .y(function(d) { return y(d.quantity); })
 
     x.domain(d3.extent(data, function(d) { return d.ftime; }));
-    y.domain([0, 250])
-    //   d3.min(lines, function(c) { return d3.min(c.values, function(d) { return d.quantity; }); }),
-    //   d3.max(lines, function(c) { return d3.max(c.values, function(d) { return d.quantity; }); })
-    // ]);
+    y.domain([
+      d3.min(lines, function(c) { return d3.min(c.values, function(d) { return d.quantity; }); }),
+      d3.max(lines, function(c) { return d3.max(c.values, function(d) { return d.quantity; }); })
+    ]);
     z.domain(lines.map(function(l) { return l.id }))
 
     var fullTimestampFormat = d3.timeFormat("%-I:%M %p %A, %b. %-d, %Y");
@@ -77,12 +77,19 @@ d3.csv('data/tweets_per_minute.csv', type, function(error, data) {
     g.append('g')
         .attr('class', 'axis axis--y')
         .call(yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .style('fill', 'black')
+        .text('Number of tweets')
 
     var team = g.selectAll('.team')
         .data(lines)
       .enter().append('g')
         .attr('class', 'team')
-    
+
+    /*
     team.append('text')
         .attr('transform', 'rotate(-90)')
         .attr('y', 0 - margin.left)
@@ -90,6 +97,7 @@ d3.csv('data/tweets_per_minute.csv', type, function(error, data) {
         .attr('dy', '1em')
         .attr('fill', '#000')
         .text('Number of tweets');
+        */
 
     team.append("path")
         .attr("class", "line")
@@ -103,7 +111,7 @@ d3.csv('data/tweets_per_minute.csv', type, function(error, data) {
 
 function type(d, _, columns) {
   //d.time = parseTime(d.time);
-  var parseTime = d3.timeParse('%Y %m %d %H:%M');
+  var parseTime = d3.timeParse('%Y %m %d %H');
   d.ftime = parseTime(d['ftime'])
 
   for (var i = 1, n = columns.length, c; i < n; ++i) d[c = columns[i]] = +d[c];

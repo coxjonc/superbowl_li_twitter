@@ -57,7 +57,7 @@ class TweetHandler(object):
         tweet_gmt = gmt.localize(tweet_time)
         localized = tweet_gmt.astimezone(est)
 
-        return localized.strftime('%Y %m %d %H:%M')
+        return localized.strftime('%Y %m %d %H')
 
     def get_tweets(self, table_name):
         """
