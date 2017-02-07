@@ -1,6 +1,8 @@
 Pull time-stamped tweets from the Twitter streaming API and load them into a MySQL database, then render stats about them as a fever graph
 ===
 
+Lives here: [http://ajcnewsapps.s3-website-us-east-1.amazonaws.com/2017/superbowl_li_twitter/](http://ajcnewsapps.s3-website-us-east-1.amazonaws.com/2017/superbowl_li_twitter/)
+
 Installation and Environment config
 ---
 Navigate to the root directory of the project and run the following to install python dependencies. It's recommended that you install with a virtualenv:
